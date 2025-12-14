@@ -17,10 +17,10 @@ Bạn có thể sử dụng Google API key thay vì OpenRouter API key.
 
 ```env
 # Chỉ cần Google API Key
-GOOGLE_API_KEY=AIzaSyDThWpTjv9HtaBWMQlYv-8rhBXISTmZVRo
+GOOGLE_API_KEY=your-api-key
 
 # Không cần OpenRouter API Key nếu chỉ dùng Google
-# OPENROUTER_API_KEY=
+# OPENROUTER_API_KEY=your-api-key
 ```
 
 ### Bước 3: Chạy
