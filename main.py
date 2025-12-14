@@ -1,8 +1,12 @@
 """Main entry point for Code Agent CLI"""
 import argparse
 import json
+from datetime import datetime
+from pathlib import Path
 from workflow import CodeAgentWorkflow
-from config import OPENROUTER_API_KEY
+from config.config_legacy import OPENROUTER_API_KEY
+from utils.logging import setup_logging, get_logger
+from config.settings import get_settings
 
 
 def print_results(results: dict):
@@ -56,6 +60,19 @@ def print_results(results: dict):
     print("\n" + "="*80)
 
 
+def setup_logging() -> Path:
+    """Configure structured logging"""
+    settings = get_settings()
+    logger = setup_logging(
+        log_level=settings.log_level,
+        log_file=Path(settings.log_file) if settings.log_file else None,
+        enable_metrics_server=settings.enable_metrics_server,
+        metrics_port=settings.metrics_port
+    )
+    log_path = settings.logs_dir / f"{datetime.now().strftime('%Y-%m-%d')}.log"
+    return log_path
+
+
 def main():
     """Main CLI function"""
     parser = argparse.ArgumentParser(
@@ -100,7 +117,15 @@ def main():
         print("Set OPENROUTER_API_KEY environment variable or use --api-key flag")
         return
     
-    # Initialize workflow
+    # Initialize logging + workflow
+    log_file = setup_logging()
+    logger = get_logger("code_agent.main")
+    logger.info(
+        "cli_started",
+        task=args.task,
+        file=args.file,
+        output=args.output
+    )
     workflow = CodeAgentWorkflow(api_key=args.api_key)
     
     # Prepare context
@@ -120,6 +145,11 @@ def main():
         
         # Print results
         print_results(final_state.get("results", {}))
+        logger.info(
+            "workflow_completed",
+            completed_agents=final_state.get("completed_agents", []),
+            log_file=str(log_file)
+        )
         
         # Save to file if requested
         if args.output:
@@ -129,8 +159,15 @@ def main():
     
     except KeyboardInterrupt:
         print("\n\nWorkflow interrupted by user.")
+        logger.warning("workflow_interrupted", reason="user_interrupt")
     except Exception as e:
         print(f"\nError: {str(e)}")
+        logger.error(
+            "workflow_failed",
+            error=str(e),
+            error_type=type(e).__name__,
+            exc_info=True
+        )
         import traceback
         traceback.print_exc()
 

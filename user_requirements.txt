@@ -1,0 +1,238 @@
+# 🎮 Bloxorz-like 3D Puzzle Game – Technical Specification
+
+## 1. Overview
+
+This is a **3D isometric puzzle game** inspired by *Bloxorz*.
+
+* The game is rendered in **true 3D** (tiles have thickness, blocks have height, real-time shadows).
+* A **fixed isometric / angled top-down camera** is used (no free camera rotation).
+* The player controls a **rectangular 3D block (2×1×1)** that rolls over floating platforms.
+* The goal is to place the block **standing upright** on the target hole tile.
+
+---
+
+## 2. Core Gameplay Objective
+
+* Move the block across the map using valid rotations.
+* Avoid falling off the map or triggering invalid tiles.
+* Complete the level when the block:
+
+  * Is **standing vertically**
+  * Is positioned **exactly on the Goal tile**
+
+---
+
+## 3. Block Mechanics
+
+### 3.1 Block States
+
+The block has three possible states:
+
+* **Standing (Vertical)**: occupies 1 tile
+* **Lying X**: occupies 2 tiles along the X-axis
+* **Lying Z**: occupies 2 tiles along the Z-axis
+
+### 3.2 Movement Rules
+
+* Controlled using **Arrow Keys / WASD**
+* Each move performs a **90° rotation around the block’s edge**
+* After every move, the system must validate:
+
+  * Whether the block is still within map bounds
+  * Whether the tiles beneath the block are valid
+
+---
+
+## 4. Level Map Structure
+
+### 4.1 Representation
+
+* Levels are defined using a **2D grid (matrix)** for logic
+* Each grid cell corresponds to a **3D tile mesh** in the scene
+
+Example (logical layout):
+
+```text
+0 0 0 0 0
+0 1 1 1 0
+0 1 G 1 0
+0 0 0 0 0
+```
+
+---
+
+## 5. Tile Types
+
+### 5.1 Basic Tiles
+
+* **Normal Tile**: supports any block state
+* **Empty Tile**: causes the block to fall → level reset
+* **Goal Tile**: level completes only if block is standing
+
+### 5.2 Special Tiles
+
+#### 🔸 Fragile Tile
+
+* Supports the block **only when lying flat**
+* If the block stands vertically → tile breaks → fall
+
+#### 🔘 Switch Tiles
+
+**Soft Switch (O)**
+
+* Activated when any part of the block touches it
+
+**Hard Switch (X)**
+
+* Activated only when the block is standing vertically
+
+Switches can:
+
+* Open or close bridges
+* Toggle other tiles on the map
+
+---
+
+## 6. Teleport & Split Mechanics
+
+### 6.1 Teleport Tile
+
+* When the block stands on this tile, it is moved to a target position
+
+### 6.2 Split Block Tile
+
+* Splits the block into **two 1×1×1 cubes**
+* Each cube can be controlled independently
+* Cubes can:
+
+  * Activate switches separately
+  * Merge back into a 2×1×1 block when positioned correctly
+
+---
+
+## 7. Failure Conditions
+
+* Any part of the block moves outside the map
+* The block stands on a fragile tile
+* No valid tile exists beneath the block
+
+→ Level resets
+
+---
+
+## 8. Win Condition
+
+* The block is **standing upright**
+* The block is **perfectly aligned on the Goal tile**
+
+---
+
+## 9. Level Design Guidelines
+
+* Recommended number of levels: **30–40**
+* Difficulty progression:
+
+  1. Basic movement
+  2. Switch mechanics
+  3. Fragile tiles
+  4. Teleport and split mechanics
+* Optional level passcodes for progress saving
+
+---
+
+## 10. Controls & UI
+
+### Controls
+
+* Arrow Keys / WASD: move block
+* `R`: reset level
+* `Space`: switch control between split cubes
+
+### UI Elements
+
+* Move counter
+* Level indicator / passcode
+* Reset button
+
+---
+
+## 11. Technical Implementation (3D Focus)
+
+### 11.1 Coordinate System
+
+* Gameplay logic remains **grid-based (2D)** for precision
+* Each tile is rendered as a **3D cube mesh**
+* Block dimensions:
+
+  * Width: 1 tile
+  * Height: 2 tiles
+  * Depth: 1 tile
+
+RenderPosition = GridPosition × TileSize
+
+---
+
+### 11.2 Camera
+
+* Fixed **isometric camera**
+* Suggested angles:
+
+  * X rotation: 45°–60°
+  * Y rotation: 45°
+* Camera does not rotate during gameplay
+
+---
+
+### 11.3 Block Animation
+
+* Each move triggers:
+
+  * A **90° rotation around the contact edge**
+  * Smooth easing (ease-in-out)
+* Animation duration: **0.2–0.35 seconds**
+
+---
+
+### 11.4 Lighting & Materials
+
+* Directional light + ambient light
+* Tile materials:
+
+  * Normal: gray
+  * Fragile: orange
+  * Goal: recessed hole
+* Block:
+
+  * Stone or metal material
+  * Real-time shadows enabled
+
+---
+
+### 11.5 Recommended Technologies
+
+* **Unity 3D** (preferred)
+* **Three.js** (Web-based)
+* **Godot 3D**
+
+---
+
+## 12. Optional Enhancements
+
+* Undo / redo system
+* Best-move scoring
+* Sound effects and particles
+* Level completion animation
+
+---
+
+## 13. Expected Outcome
+
+A clean and challenging 3D puzzle game that:
+
+* Emphasizes spatial reasoning
+* Uses deterministic, grid-based logic
+* Faithfully recreates the feel of *Bloxorz* while allowing future extensions
+
+---
+`
+**End of Specification**

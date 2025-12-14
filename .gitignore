@@ -8,6 +8,7 @@ venv/
 ENV/
 .venv
 .env
+.env.backup
 *.log
 .DS_Store
 .idea/

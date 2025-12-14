@@ -1,5 +1,6 @@
 """Configuration for Code Agent system"""
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,24 +9,41 @@ load_dotenv()
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
-# Free models from OpenRouter
-# Note: Model names may need to be updated. Check available models at:
-# https://openrouter.ai/models or use get_available_models() method
+# Google AI Studio / Gemini configuration
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
+
+# Model presets for different backends.
+# FREE_MODELS are kept for OpenRouter compatibility; GOOGLE_MODELS for direct Gemini use.
 FREE_MODELS = {
-    "code": "google/gemma-3-27b-it:free",  # Good for code tasks
-    "general": "openai/gpt-oss-20b:free",  # General purpose (removed :free suffix)
-    "fast": "tngtech/deepseek-r1t2-chimera:free",  # Fast responses (removed :free suffix)
-    # Alternative free models to try:
-    # "code": "google/gemini-flash-1.5-8b:free",
-    # "general": "meta-llama/llama-3.2-3b-instruct:free",
-    # "fast": "qwen/qwen-2.5-7b-instruct:free",
+    "code": "tngtech/deepseek-r1t2-chimera:free",
+    "general": "openai/gpt-oss-20b:free",
+    "fast": "google/gemma-3-27b-it:free",
+}
+
+GOOGLE_MODELS = {
+    # A powerful model with advanced reasoning, visual understanding, and coding.
+    "general": "gemini-2.5-flash    ",
+    # Strong for code + reasoning.
+    "code": "gemini-2.5-flash",
+    # Fast / high-volume tasks.
+    "fast": "gemini-2.5-flash",
 }
 
 # Workspace configuration
 WORKSPACE_PATH = os.getenv("WORKSPACE_PATH", ".")
+LOGS_DIR = (Path(WORKSPACE_PATH).expanduser().resolve() / "logs")
 
 # Agent roles
 AGENT_ROLES = {
+    "planner": (
+        "You are a senior product engineer and technical planner. Turn natural "
+        "language product requirements into user stories, features, and a file-level "
+        "implementation plan."
+    ),
+    "coder": (
+        "You are a senior software engineer. Given a task and a high-level plan, "
+        "produce concrete source files that implement the requested behavior."
+    ),
     "code_reader": (
         "You are an expert at reading and summarizing codebases. "
         "Inspect the repository, capture structure, technologies, and key files."

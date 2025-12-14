@@ -1,8 +1,19 @@
-"""OpenRouter API Client for free AI models"""
+"""LLM clients and factory for Code Agent.
+
+By default we use OpenRouter; if GOOGLE_API_KEY is set we can also
+use direct Gemini models via Google AI Studio.
+"""
 import json
 from typing import Optional, Dict, Any
 import requests
-from config import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, FREE_MODELS
+
+from config import (
+    OPENROUTER_API_KEY,
+    OPENROUTER_BASE_URL,
+    FREE_MODELS,
+    GOOGLE_API_KEY,
+)
+from google_client import GoogleAIClient
 
 
 class OpenRouterClient:
@@ -17,6 +28,7 @@ class OpenRouterClient:
             "HTTP-Referer": "https://github.com/code-agent",
             "X-Title": "Code Agent",
         }
+        print("[LLM] Using OpenRouter backend")
     
     def chat(
         self,
@@ -112,4 +124,22 @@ class OpenRouterClient:
             result["message"] = str(e)
         
         return result
+
+
+def get_default_client(api_key: Optional[str] = None):
+    """Return the preferred client based on available credentials.
+
+    Priority:
+    1. If GOOGLE_API_KEY is set, use GoogleAIClient (Gemini).
+    2. Otherwise fall back to OpenRouterClient.
+    """
+    if GOOGLE_API_KEY:
+        try:
+            return GoogleAIClient()
+        except Exception:
+            # If Google client fails to initialize, silently fall back
+            # to OpenRouter so the system still works with OpenRouter_API_KEY.
+            pass
+    return OpenRouterClient(api_key=api_key)
+
 

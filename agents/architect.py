@@ -63,19 +63,25 @@ Please suggest:
         """Execute architecture suggestion task"""
         if context is None:
             context = {}
-        
-        # Get codebase structure
-        analysis = self.code_reader.analyze_codebase(max_files=15)
-        
+        # Fallback nếu code_reader lỗi hoặc không trả về đầy đủ trường
+        try:
+            analysis = self.code_reader.analyze_codebase()
+            total_files = analysis.get("total_files", 0)
+            files = analysis.get("files", [])
+        except Exception as e:
+            print(f"[Architect] Error running code_reader: {e}")
+            total_files = 0
+            files = []
+        if not isinstance(files, list):
+            print(f"[Architect] code_reader files is not a list, value: {files}")
+            files = []
         structure_info = {
-            "total_files": analysis["total_files"],
-            "files": analysis["file_list"],
+            "total_files": total_files,
+            "files": files,
             "structure": "Analyzed from codebase"
         }
-        
         suggestions = self.suggest_structure(structure_info)
         best_practices = self.suggest_best_practices(structure_info)
-        
         return {
             "agent": "architect",
             "task": task,
